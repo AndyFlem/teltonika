@@ -1,7 +1,7 @@
 const net = require('net');
 const port = 4242;
 const host = '172.31.46.147';
-
+const fs = require('fs')
 
 const server = net.createServer();
 server.listen(port, host, () => {
@@ -15,14 +15,13 @@ server.on('connection', function(sock) {
     sockets.push(sock);
 
     sock.on('data', function(data) {
-        console.log('DATA ' + sock.remoteAddress + ': ' + data);
-        // Write the data back to all the connected, the client will receive it as data from the server
-        /*
-        sockets.forEach(function(sock, index, array) {
-            sock.write(sock.remoteAddress + ':' + sock.remotePort + " said " + data + '\n');
-        });
-        */
-    });
+        let dat = new Buffer.from(data)
+        console.log('DATA ' + sock.remoteAddress + ': ', dat);
+        fs.appendFile('dat.dat', dat , function (err) {
+            if (err) throw err;
+            console.log('Saved!');
+          })
+    })
 
     // Add a 'close' event handler to this instance of socket
     sock.on('close', function(data) {
