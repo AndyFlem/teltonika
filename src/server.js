@@ -1,7 +1,10 @@
-const net = require('net');
-const port = 4242;
-const host = '172.31.46.147';
-const fs = require('fs')
+import * as net from 'net'
+import * as fs from 'fs'
+
+import { parse } from './packet.js'
+
+const port = 80;
+const host = '194.233.154.242';
 
 const server = net.createServer();
 server.listen(port, host, () => {

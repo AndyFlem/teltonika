@@ -2,7 +2,6 @@ const fs = require('fs');
 const fsPromises = fs.promises;
 const { create } = require('xmlbuilder2')
 
-
 binToXml().catch(console.error)
 
 async function binToXml() {
@@ -78,8 +77,7 @@ async function readRecord(filehandle) {
     return record
   } else {
     return false
-  }
-  
+  }  
 }
 
 function bufferToString(buffer) {
