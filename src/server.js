@@ -25,6 +25,7 @@ server.on('connection', function(sock) {
       console.log(new Date().toString() + ' - IMEI: ' + imei)
       sock.imei = imei
       // send 0x01 on the socket
+      sock.write(new Buffer.from([0x01]))
       
     }
 
