@@ -53,27 +53,6 @@ async function parse(fileName) {
     }
 }
 
-async function readRecord(filehandle) {
- 
-  let dateBytes = await readBytes(filehandle, 8)
-  if (dateBytes) {
-    let record = {}
-
-    record.date = new Date(bufferToLong(dateBytes))
-    record.priority = (await readBytes(filehandle, 1)).readUInt8()
-    record.lon = (await readBytes(filehandle, 4)).readInt32BE()/10000000
-    record.lat = (await readBytes(filehandle, 4)).readInt32BE()/10000000
-    record.alt = (await readBytes(filehandle, 2)).readUInt16BE()
-    record.ang = (await readBytes(filehandle, 2)).readUInt16BE()
-    record.sat = (await readBytes(filehandle, 1)).readUInt8()
-    record.speed = (await readBytes(filehandle, 2)).readUInt16BE()
-    return record
-  } else {
-    return false
-  }  
-  let avl =  (await readBytes(filehandle, 25))
-}
-
 async function readBytes(fh, length) {
   let buffer = new Buffer.alloc(length)
   let ret = await fh.read(buffer, 0, length, null) 
