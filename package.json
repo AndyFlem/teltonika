@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "debug": "^4.3.7",
     "xmlbuilder2": "^3.1.1"
   }
 }

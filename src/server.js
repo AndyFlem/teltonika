@@ -31,7 +31,8 @@ server.on('connection', function(sock) {
       let records = parse(dat)
       console.log(`Got ${records.length} records.`)
       console.log(records[0])
-      let resp = Buffer.allocUnsafe(4).writeInt32BE(records.length)
+      let resp = Buffer.allocUnsafe(4)
+      resp.writeInt32BE(records.length)
       sock.write(resp)
     }
   })

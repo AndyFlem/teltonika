@@ -2,7 +2,7 @@
 //import * as fs from 'fs'
 //const fsPromises = fs.promises;
 
-async function parse(packet) {
+function parse(packet) {
   let records = []
   try {
     //filehandle = await doOpen(fileName, 'r+')
@@ -31,7 +31,7 @@ async function parse(packet) {
 
     let recordNo = 1
     
-    while (recordNo < recordCount) {
+    while (recordNo <= recordCount) {
       let recordBytes = packet.subarray(10+((recordNo-1)*avlBytes),10+(recordNo*avlBytes))
       let record = {recordNo: recordNo}
 
@@ -44,10 +44,10 @@ async function parse(packet) {
       record.sat = recordBytes.readUInt8(21)
       record.speed = recordBytes.readUInt16BE(22)
       recordNo++
-      console.log('Record:' + record)
-      records.push(record)
-  
+      console.log('Record:' + JSON.stringify(record))
+      records.push(record)  
     }
+    console.log(records.length)
     return records
   } catch (err) {
     console.error(err)
