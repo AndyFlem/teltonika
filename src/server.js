@@ -14,21 +14,26 @@ server.listen(port, host, () => {
 let sockets = []
 
 server.on('connection', function(sock) {
-  console.log(new Date().toString() + ' - CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort)
+  console.log(new Date().toString() + ' - CONNECTED: ' + sockName(sock))
+  sock.imei = 'unknown'
   sockets.push(sock)
 
   sock.on('data', function(data) {
     let dat = new Buffer.from(data)
-    console.log('DATA ' + sock.remoteAddress + ': ', dat)
-    if (dat.subarray(0,3).compare(new Buffer.from([0x00, 0x00, 0x00, 0x0F])) == 0) {
+    console.log(new Date().toString() + ' - DATA: ' + sockName(sock))
+    if (dat.subarray(0,2).compare(new Buffer.from([0x00, 0x0F])) == 0) {
       let imei = dat.subarray(4).toString('ascii')
-      console.log(new Date().toString() + ' - IMEI: ' + imei)
+      console.log(new Date().toString() + ' - IMEI: ' + sockName(sock))
       sock.imei = imei
       // send 0x01 on the socket
-      sock.write(new Buffer.from([0x01]))
-      
+      sock.write(new Buffer.from([0x01])) 
+    } else {
+      let records = parse(dat)
+      console.log(`Got ${records.length} records.`)
+      console.log(records[0])
+      let resp = Buffer.allocUnsafe(4).writeInt32BE(records.length)
+      sock.write(resp)
     }
-
   })
 
   // Add a 'close' event handler to this instance of socket
@@ -37,6 +42,10 @@ server.on('connection', function(sock) {
           return o.remoteAddress === sock.remoteAddress && o.remotePort === sock.remotePort;
       })
       if (index !== -1) sockets.splice(index, 1)
-      console.log('CLOSED: ' + sock.remoteAddress + ' ' + sock.remotePort)
+      console.log(new Date().toString() + ' - CLOSED: ' + sockName(sock)) + '. Sockets open: ' + sockets.length
   })
 })
+
+function sockName(sock) {
+  return sock.remoteAddress + ':' + sock.remotePort + ', IMEI:' + sock.imei
+}

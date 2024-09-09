@@ -1,38 +1,38 @@
 //const fs = require('fs');
-import * as fs from 'fs'
-const fsPromises = fs.promises;
+//import * as fs from 'fs'
+//const fsPromises = fs.promises;
 
-async function parse(fileName) {
-  let filehandle = null
-
+async function parse(packet) {
+  let records = []
   try {
-    //open bin
-    filehandle = await doOpen(fileName, 'r+')
+    //filehandle = await doOpen(fileName, 'r+')
 
-    let preamble = await readBytes(filehandle, 4)
+    let preamble = packet.subarray(0,4)//await readBytes(filehandle, 4)
     if (preamble.compare(new Buffer.from([0x00, 0x00, 0x00, 0x00])) != 0) {
       console.error('Invalid preamble')
-      return
+      return records
     }
-    let packetLength = (await readBytes(filehandle, 4)).readInt32BE()
-    console.log('Packet length:', packetLength)
-    let codecId = (await readBytes(filehandle, 1)).readUInt8()
-    console.log('Codec ID:', codecId)
+    let packetLength = packet.subarray(4,8).readInt32BE()
+    let codecId = packet.subarray(8,9).readUInt8()
     if (codecId != 8) {
       console.error('Invalid codec ID')
-      return
+      return records
     }
-    recordCount = (await readBytes(filehandle, 1)).readUInt8()
-    console.log('Record count:', recordCount)
+    let recordCount = packet.subarray(9,10).readUInt8()
 
     let avlBytes = (packetLength - 3) / recordCount
-    console.log('AVL Record bytes: ' + avlBytes)
     let ioBytes = avlBytes - 24
+
+    console.log('Codec ID:', codecId)
+    console.log('Packet length:', packetLength)
+    console.log('Record count:', recordCount)
+    console.log('AVL Record bytes: ' + avlBytes)
     console.log('IO bytes: ' + ioBytes)
 
     let recordNo = 1
+    
     while (recordNo < recordCount) {
-      let recordBytes = (await readBytes(filehandle, avlBytes))
+      let recordBytes = packet.subarray(10+((recordNo-1)*avlBytes),10+(recordNo*avlBytes))
       let record = {recordNo: recordNo}
 
       record.date = new Date(bufferToLong(recordBytes.subarray(0, 8)))
@@ -44,19 +44,15 @@ async function parse(fileName) {
       record.sat = recordBytes.readUInt8(21)
       record.speed = recordBytes.readUInt16BE(22)
       recordNo++
-      console.log(record)
+      console.log('Record:' + record)
+      records.push(record)
   
     }
+    return records
   } catch (err) {
     console.error(err)
     return
     }
-}
-
-async function readBytes(fh, length) {
-  let buffer = new Buffer.alloc(length)
-  let ret = await fh.read(buffer, 0, length, null) 
-  if (ret.bytesRead > 0) {return buffer} else { return false }  
 }
 
 function bufferToLong(buffer) {
@@ -69,11 +65,6 @@ function bufferToLong(buffer) {
   }
   
   return value;
-}
-
-async function doOpen(fileName) {
-  const fh = await fsPromises.open(fileName, 'r+')
-  return fh
 }
 
 
