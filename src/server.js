@@ -3,8 +3,8 @@ import * as net from 'net'
 
 import { parse } from './packet.js'
 
-const port = 88
-const host = '172.31.18.167'
+const port = 8080
+const host = '10.8.0.2'
 
 const server = net.createServer()
 server.listen(port, host, () => {
@@ -28,12 +28,16 @@ server.on('connection', function(sock) {
       // send 0x01 on the socket
       sock.write(new Buffer.from([0x01])) 
     } else {
-      let records = parse(dat)
-      console.log(`Got ${records.length} records.`)
-      console.log(records[0])
-      let resp = Buffer.allocUnsafe(4)
-      resp.writeInt32BE(records.length)
-      sock.write(resp)
+      if (sock.imei) {
+        let records = parse(sock.imei, dat)
+        console.log(`Got ${records.length} records.`)
+        console.log(records[0])
+        let resp = Buffer.allocUnsafe(4)
+        resp.writeInt32BE(records.length)
+        sock.write(resp)
+      } else {
+        console.log(new Date().toString() + ' - Data on socket without IMEI: ' + sockName(sock))
+      }
     }
   })
 
